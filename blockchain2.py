@@ -26,7 +26,7 @@ class Blockchain(object):
     def register_node(self, adress):
         """
         Add a new node to the list of nodes
-        :param address: <str> Address of node. Eg. 'http://192.168.0.5:5000'
+        :param address: <str> Address of node. Eg. 'http://192.168.0.5:5001'
         :return: None
         """
         parsed_url = urlparse(adress)
@@ -126,14 +126,13 @@ class Blockchain(object):
             response = requests.get('http://{}/chain'.format(node))
 
             if response.status_code == 200:
-                print(response)
-                # length = response.json()['length']
-                # chain = response.json()['chain']
+                length = response.json()['length']
+                chain = response.json()['chain']
 
                 # check if the length is longer 'n the chain is valid
-                # if length > max_length and self.valid_chain(chain):
-                #     max_length = length
-                #     new_chain = chain
+                if length > max_length and self.valid_chain(chain):
+                    max_length = length
+                    new_chain = chain
 
         # replace our chain if we discover a new valid chain longer than ours
         if new_chain:
@@ -266,4 +265,4 @@ def consensus():
     return jsonify(response), 200
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5001)

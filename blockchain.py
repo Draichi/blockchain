@@ -82,7 +82,8 @@ class Blockchain(object):
         :param proof: <int> Current Proof
         :return: <bool> True if correct, False if not.
         """
-        guess = f'{last_proof}{proof}'.encode()
+
+        guess = '{}{}'.format(last_proof, proof)
         guess_hash = hashlib.sha256(guess).hexdigest()
         return guess_hash[:4] == "0000"
 
@@ -103,7 +104,31 @@ blockchain = Blockchain()
 # define routes
 @app.route('/mine', methods=['GET'])
 def mine():
-    return 'hello from line 104'
+    # algorithm to get the next proof
+    last_block = blockchain.last_block
+    last_proof = last_block['proof']
+    proof = blockchain.proof_of_work(last_proof)
+
+    # we must recieve a reward for finding the proof
+    # the sender is "0" to signify that this node has mined a new coin
+    blockchain.new_transaction(
+        sender="0",
+        recipient=node_identifier,
+        amount=1
+    )
+
+    # forge the new block by adding it to the chain
+    previous_hash = blockchain.hash(last_block)
+    block = blockchain.new_block(proof, previous_hash)
+
+    response = {
+        'message': "New Block Forged motherfuka",
+        'index': block['index'],
+        'transactions': block['transactions'],
+        'proof': block['proof'],
+        'previous_hash': block['previous_hash']
+    }
+    return jsonify(response), 200
 
 @app.route('/transacions/new', methods=['POST'])
 def new_transaction():
@@ -117,7 +142,7 @@ def new_transaction():
     # create a new transaction
     index = blockchain.new_transaction(values['sender'], values['recipient'], values['amount'])
     
-    response = {'message': f'Transaction will be added to block {index} dude, stay cool :)'}
+    response = {'message': 'Transaction will be added to block {} dude, stay cool :)'.format(index)}
     return jsonify(response), 201
 
 @app.route('/chain', methods=['GET'])

@@ -1,25 +1,18 @@
-import hashlib
-import json
-import requests
-
+import hashlib, json, requests
 from textwrap import dedent
 from time import time
 from uuid import uuid4
-
-# import urllib
+from flask import Flask, jsonify, request
 try:
     from urllib.parse import urlparse
 except ImportError:
      from urlparse import urlparse
 
-from flask import Flask, jsonify, request
-
 class Blockchain(object):
     def __init__(self):
         self.chain = []
         self.current_transactions = []
-        self.nodes = set() # set is a cheap way to ensure that we won't have duplicate nodes
-
+        self.nodes = set() # set is a way to ensure that we won't have duplicate nodes
         # create the genesis block
         self.new_block(previous_hash=1, proof=100)
 
@@ -150,7 +143,7 @@ class Blockchain(object):
         :return: <str>
         """
         # dictionary must be ordered, or we'll have incosistent hashes
-        block_string = json.dumps(block, sort_keys=True).encode()
+        block_string = json.dumps(block, sort_keys=True).encode('utf-8')
         return hashlib.sha256(block_string).hexdigest()
     
     @staticmethod
@@ -163,7 +156,7 @@ class Blockchain(object):
         """
 
         guess = '{}{}'.format(last_proof, proof)
-        guess_hash = hashlib.sha256(guess).hexdigest()
+        guess_hash = hashlib.sha256(guess.encode('utf-8')).hexdigest()
         return guess_hash[:4] == "0000"
 
     @property
@@ -266,4 +259,9 @@ def consensus():
     return jsonify(response), 200
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    import sys
+    if len(sys.argv) != 2:
+        print("Usage: python3 run.py [PORT]")
+        exit()
+    port = int(sys.argv[1])
+    app.run(host='0.0.0.0', port=port)

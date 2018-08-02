@@ -4,7 +4,6 @@ from time import time
 from uuid import uuid4
 from flask import Flask, jsonify, request
 from src.blockchain import Blockchain
-
 try:
     from urllib.parse import urlparse
 except ImportError:

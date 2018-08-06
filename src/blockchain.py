@@ -39,10 +39,8 @@ class Blockchain(object):
             'proof': proof,
             'previous_hash': previous_hash or self.hash(self.chain[-1])
         }
-
         # reset the current list of transactions
         self.current_transactions = []
-
         self.chain.append(block)
         return block
     
@@ -82,24 +80,19 @@ class Blockchain(object):
         """
         last_block = chain[0]
         current_index = 1
-
         while current_index < len(chain):
             block = chain[current_index]
             print('Last block: {}'.format(last_block))
             print('Block: {}'.format(block))
             print("\n----------\n")
-
             # check if that block's hash is correct
             if block['previous_hash'] != self.hash(last_block):
                 return False
-
             # check if that proof of work is correct
             if not self.valid_proof(last_block['proof'], block['proof']):
                 return False
-
             last_block = block
             current_index += 1
-
         return True
 
     def resolve_conflicts(self):
@@ -110,29 +103,22 @@ class Blockchain(object):
         """
         neighbours = self.nodes
         new_chain = None
-
         # we're only looking for chains longer than ours
         max_length = len(self.chain)
-
         # grab and verifythe chains from all nodes in our network
         for node in neighbours:
             response = requests.get('http://{}/chain'.format(node))
-
             if response.status_code == 200:
-                print(response)
-                # length = response.json()['length']
-                # chain = response.json()['chain']
-
+                length = response.json()['length']
+                chain = response.json()['chain']
                 # check if the length is longer 'n the chain is valid
-                # if length > max_length and self.valid_chain(chain):
-                #     max_length = length
-                #     new_chain = chain
-
+                if length > max_length and self.valid_chain(chain):
+                    max_length = length
+                    new_chain = chain
         # replace our chain if we discover a new valid chain longer than ours
         if new_chain:
             self.chain = new_chain
             return True
-
         return False
     
     @staticmethod
@@ -154,7 +140,6 @@ class Blockchain(object):
         :param proof: <int> Current Proof
         :return: <bool> True if correct, False if not.
         """
-
         guess = '{}{}'.format(last_proof, proof)
         guess_hash = hashlib.sha256(guess.encode('utf-8')).hexdigest()
         return guess_hash[:4] == "0000"

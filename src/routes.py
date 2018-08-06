@@ -1,3 +1,4 @@
+from termcolor import cprint
 import hashlib, json, requests
 from textwrap import dedent
 from time import time
@@ -11,10 +12,9 @@ except ImportError:
 
 # instantiate our node
 app = Flask(__name__)
-
 # generate a globally unique adress for this node
 node_identifier = str(uuid4()).replace('-', '')
-
+cprint('> this node key: {}'.format(node_identifier), 'cyan')
 # instantiate the blockchain
 blockchain = Blockchain()
 
@@ -25,21 +25,19 @@ def mine():
     last_block = blockchain.last_block
     last_proof = last_block['proof']
     proof = blockchain.proof_of_work(last_proof)
-
     # we must recieve a reward for finding the proof
     # the sender is "0" to signify that this node has mined a new coin
     blockchain.new_transaction(
-        sender="0",
+        sender="Mined",
         recipient=node_identifier,
         amount=1
     )
-
     # forge the new block by adding it to the chain
     previous_hash = blockchain.hash(last_block)
     block = blockchain.new_block(proof, previous_hash)
 
     response = {
-        'message': "New Block Forged motherfuka",
+        'message': "New Block Forged",
         'index': block['index'],
         'transactions': block['transactions'],
         'proof': block['proof'],
@@ -82,7 +80,7 @@ def register_nodes():
         blockchain.register_node(node)
 
     response = {
-        'message': 'New nodes have been added',
+        'message': 'Nodes {} have been added'.format(nodes),
         'total_nodes': list(blockchain.nodes)
     }
     return jsonify(response), 201

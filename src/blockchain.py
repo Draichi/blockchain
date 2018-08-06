@@ -1,3 +1,4 @@
+from termcolor import cprint
 import hashlib, json, requests
 from textwrap import dedent
 from time import time
@@ -14,6 +15,7 @@ class Blockchain(object):
         self.current_transactions = []
         self.nodes = set() # set is a way to ensure that we won't have duplicate nodes
         # create the genesis block
+        cprint('> forging genesis block...','green')
         self.new_block(previous_hash=1, proof=100)
 
     def register_node(self, adress):
@@ -42,6 +44,7 @@ class Blockchain(object):
         # reset the current list of transactions
         self.current_transactions = []
         self.chain.append(block)
+        cprint('> block forged', 'green')
         return block
     
     def new_transaction(self, sender, recipient, amount):
@@ -57,6 +60,7 @@ class Blockchain(object):
             'recipient': recipient,
             'amount': amount
         })
+        cprint('> transaction from {} to {} registered'.format(sender, recipient), 'green')
         return self.last_block['index'] + 1
 
     def proof_of_work(self, last_proof):
@@ -82,9 +86,6 @@ class Blockchain(object):
         current_index = 1
         while current_index < len(chain):
             block = chain[current_index]
-            print('Last block: {}'.format(last_block))
-            print('Block: {}'.format(block))
-            print("\n----------\n")
             # check if that block's hash is correct
             if block['previous_hash'] != self.hash(last_block):
                 return False
@@ -117,6 +118,7 @@ class Blockchain(object):
                     new_chain = chain
         # replace our chain if we discover a new valid chain longer than ours
         if new_chain:
+            cprint('> Chain replaced', 'cyan')
             self.chain = new_chain
             return True
         return False

@@ -5,6 +5,9 @@
 ---
 ## Setup
 ```sh
+# install requirements
+pip3 install -r requirements.txt
+
 # setup nodes
 python3 run.py 5000
 python3 run.py 5001
